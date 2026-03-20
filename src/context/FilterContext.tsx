@@ -4,7 +4,7 @@ import type { GlobalFilters } from '../types';
 function getDefaultDateRange() {
   const end = new Date();
   const start = new Date();
-  start.setDate(start.getDate() - 30);
+  start.setMonth(start.getMonth() - 6);
   return {
     start: start.toISOString().split('T')[0],
     end: end.toISOString().split('T')[0],
@@ -35,8 +35,8 @@ export function FilterProvider({ children }: { children: React.ReactNode }) {
       const saved = localStorage.getItem('sc_filters');
       if (saved) {
         const parsed = JSON.parse(saved) as GlobalFilters;
-        // Ensure new field exists for existing saved state
-        return { ...DEFAULT_FILTERS, ...parsed };
+        // Always recompute date range — saved range may be stale
+        return { ...DEFAULT_FILTERS, ...parsed, dateRange: getDefaultDateRange() };
       }
     } catch { /* ignore */ }
     return DEFAULT_FILTERS;

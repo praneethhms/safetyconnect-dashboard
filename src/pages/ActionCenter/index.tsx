@@ -13,7 +13,7 @@ const TABLE_LABELS: Record<TableKey, string> = {
   nodata: 'No Data Users',
   permission: 'Permission Off',
   stale: 'Stale Devices',
-  intervention: 'Intervention Targets',
+  intervention: 'Intervention (7–30d)',
 };
 
 function formatDate(d: string) {
@@ -55,12 +55,12 @@ export function ActionCenter() {
     nodata: filteredUsers.filter(u => u.total_events === 0),
     permission: filteredUsers.filter(u => !u.permissions_ok),
     stale: filteredUsers.filter(u => u.days_since_sync >= 14),
-    // Fixed intervention logic: users who have had some activity but are sliding
+    // Intervention: users who have had some activity but are recently slipping (7-30 days)
     intervention: filteredUsers.filter(u =>
-      u.total_events > 0 && // had activity before
+      u.total_events > 0 &&
       u.days_inactive != null &&
-      u.days_inactive >= 7 && // inactive at least 7 days
-      u.days_inactive < 60   // but not completely gone (those are in inactive)
+      u.days_inactive >= 7 &&
+      u.days_inactive <= 30
     ),
   }), [filteredUsers, inactiveDays]);
 

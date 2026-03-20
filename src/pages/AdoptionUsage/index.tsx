@@ -248,17 +248,52 @@ export function AdoptionUsage() {
               csvColumns={['stage', 'value']}
               csvFilename={`${clientName}_adoption_funnel`}
             >
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={data!.funnelData} layout="vertical" margin={{ top: 5, right: 80, left: 70, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis type="number" tick={{ fontSize: 11 }} tickFormatter={v => fmtNum(v as number)} />
-                  <YAxis dataKey="stage" type="category" tick={{ fontSize: 12 }} />
-                  <Tooltip formatter={(v: number) => [fmtNum(v), 'Users']} />
-                  <Bar dataKey="value" fill="#3b82f6" radius={[0, 4, 4, 0]}>
-                    <LabelList dataKey="value" position="right" formatter={(v: number) => fmtNum(v)} style={{ fontSize: 11, fill: '#374151' }} />
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              <div className="space-y-3 py-4">
+                {[
+                  {
+                    label: 'Licensed',
+                    value: data!.funnelData[0].value,
+                    pct: 100,
+                    color: 'bg-blue-500',
+                    drop: null,
+                  },
+                  {
+                    label: 'Activated',
+                    value: data!.funnelData[1].value,
+                    pct: data!.funnelData[0].value ? Math.round((data!.funnelData[1].value / data!.funnelData[0].value) * 100) : 0,
+                    color: 'bg-purple-500',
+                    drop: data!.funnelData[0].value ? Math.round(((data!.funnelData[0].value - data!.funnelData[1].value) / data!.funnelData[0].value) * 100) : 0,
+                  },
+                  {
+                    label: 'Active',
+                    value: data!.funnelData[2].value,
+                    pct: data!.funnelData[0].value ? Math.round((data!.funnelData[2].value / data!.funnelData[0].value) * 100) : 0,
+                    color: 'bg-green-500',
+                    drop: data!.funnelData[1].value ? Math.round(((data!.funnelData[1].value - data!.funnelData[2].value) / data!.funnelData[1].value) * 100) : 0,
+                  },
+                ].map((stage) => (
+                  <div key={stage.label}>
+                    {stage.drop !== null && stage.drop > 0 && (
+                      <div className="flex items-center gap-2 ml-4 mb-1">
+                        <div className="w-px h-3 bg-gray-200 ml-3" />
+                        <span className="text-xs text-red-500 font-medium">▼ {stage.drop}% drop-off</span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-gray-500 w-16 text-right">{stage.label}</span>
+                      <div className="flex-1 bg-gray-100 rounded-full h-8 relative overflow-hidden">
+                        <div
+                          className={`${stage.color} h-full rounded-full flex items-center justify-end pr-3 transition-all`}
+                          style={{ width: `${stage.pct}%`, minWidth: '2rem' }}
+                        >
+                          <span className="text-white text-xs font-bold">{stage.pct}%</span>
+                        </div>
+                      </div>
+                      <span className="text-xs font-semibold text-gray-800 w-14">{stage.value.toLocaleString()}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
               <div className="mt-2 text-xs text-gray-500 text-center">
                 Activation Rate: <span className="font-semibold text-purple-600">{fmtPct(data!.latest.activationRate)}</span>
                 &nbsp;| Adoption Rate: <span className="font-semibold text-green-600">{fmtPct(data!.latest.adoptionRate)}</span>
