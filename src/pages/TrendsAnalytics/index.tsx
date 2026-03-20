@@ -58,7 +58,7 @@ export function TrendsAnalytics() {
     const trend = months.map(month => {
       const acts = userActivity.filter(u => u.month === month && u.client_id === selectedClientId);
       const snaps = healthSnapshots.filter(h => h.month === month && h.client_id === selectedClientId);
-      const mySupport = supportMetrics.filter(s => s.client_id === selectedClientId);
+      const mySupport = supportMetrics.filter(s => s.client_id === selectedClientId && s.month === month);
       const licensed = acts.reduce((s, a) => s + a.licensed_users, 0);
       const active = acts.reduce((s, a) => s + a.active_users, 0);
       const avgHealth = snaps.length ? snaps.reduce((s, h) => s + h.health_score, 0) / snaps.length : 0;
@@ -281,14 +281,15 @@ export function TrendsAnalytics() {
             </SectionCard>
           </div>
 
-          <SectionCard title="MRR Trend (12 Months)">
+          <SectionCard title="Estimated MRR Trend">
+            <p className="text-xs text-gray-400 mb-2">MRR is estimated from contract ARR data.</p>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={data!.arrTrend} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="month" tick={{ fontSize: 10 }} />
                 <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `$${((v as number)/1000).toFixed(0)}K`} />
                 <Tooltip formatter={(v) => fmtCurrency(v as number)} />
-                <Bar dataKey="arr" fill="#8b5cf6" name="MRR" radius={[2, 2, 0, 0]} />
+                <Bar dataKey="arr" fill="#8b5cf6" name="Est. MRR" radius={[2, 2, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </SectionCard>
@@ -332,6 +333,14 @@ export function TrendsAnalytics() {
                 </div>
               ))}
             </div>
+
+            {compareMode === 'qoq' && driverData && driverData.qoqTrend.slice(0, 3).every(q =>
+              (['ph','ha','hb','hc','os'] as const).every(b => (q[b] as number) === 0)
+            ) && (
+              <div className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded px-3 py-1.5 mb-3">
+                ⚠ Driver data only available for the last 2 months. Q1–Q3 show no data.
+              </div>
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
               {/* Behaviour Trend */}

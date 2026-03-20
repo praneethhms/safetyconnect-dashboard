@@ -138,8 +138,8 @@ export function HealthRisk() {
         month: m.slice(5),
         health: h?.health_score ?? null,
         attach: h?.attach_rate ?? null,
-        active_pct: h ? parseFloat((h.active_pct * 100).toFixed(1)) : null,
-        feature_adoption: h ? parseFloat((h.feature_adoption_pct * 100).toFixed(1)) : null,
+        active_pct: h?.active_pct ?? null,
+        feature_adoption: h?.feature_adoption_pct ?? null,
         engagement: h?.engagement_score ?? null,
         support: h?.support_score ?? null,
         billing: h?.billing_score ?? null,
@@ -157,8 +157,8 @@ export function HealthRisk() {
         month: q.label,
         health: avg('health_score'),
         attach: avg('attach_rate'),
-        active_pct: parseFloat((avg('active_pct') * 100).toFixed(1)),
-        feature_adoption: parseFloat((avg('feature_adoption_pct') * 100).toFixed(1)),
+        active_pct: avg('active_pct'),
+        feature_adoption: avg('feature_adoption_pct'),
         engagement: avg('engagement_score'),
         support: avg('support_score'),
         billing: avg('billing_score'),
@@ -172,8 +172,8 @@ export function HealthRisk() {
         month: m.slice(5),
         health: h?.health_score ?? null,
         attach: h?.attach_rate ?? null,
-        active_pct: h ? parseFloat((h.active_pct * 100).toFixed(1)) : null,
-        feature_adoption: h ? parseFloat((h.feature_adoption_pct * 100).toFixed(1)) : null,
+        active_pct: h?.active_pct ?? null,
+        feature_adoption: h?.feature_adoption_pct ?? null,
         engagement: h?.engagement_score ?? null,
         support: h?.support_score ?? null,
         billing: h?.billing_score ?? null,
@@ -185,8 +185,8 @@ export function HealthRisk() {
       subject: c.label,
       value: (() => {
         if (!latest) return 0;
-        if (c.key === 'active_pct') return parseFloat((latest.active_pct * 100).toFixed(1));
-        if (c.key === 'feature_adoption_pct') return parseFloat((latest.feature_adoption_pct * 100).toFixed(1));
+        if (c.key === 'active_pct') return latest.active_pct;
+        if (c.key === 'feature_adoption_pct') return latest.feature_adoption_pct;
         if (c.key === 'attach_rate') return latest.attach_rate;
         return (latest as unknown as Record<string, number>)[c.key] ?? 0;
       })(),
@@ -200,15 +200,15 @@ export function HealthRisk() {
       color: c.color,
       current: (() => {
         if (!latest) return 0;
-        if (c.key === 'active_pct') return parseFloat((latest.active_pct * 100).toFixed(1));
-        if (c.key === 'feature_adoption_pct') return parseFloat((latest.feature_adoption_pct * 100).toFixed(1));
+        if (c.key === 'active_pct') return latest.active_pct;
+        if (c.key === 'feature_adoption_pct') return latest.feature_adoption_pct;
         if (c.key === 'attach_rate') return latest.attach_rate;
         return (latest as unknown as Record<string, number>)[c.key] ?? 0;
       })(),
       prior: (() => {
         if (!prior) return 0;
-        if (c.key === 'active_pct') return parseFloat((prior.active_pct * 100).toFixed(1));
-        if (c.key === 'feature_adoption_pct') return parseFloat((prior.feature_adoption_pct * 100).toFixed(1));
+        if (c.key === 'active_pct') return prior.active_pct;
+        if (c.key === 'feature_adoption_pct') return prior.feature_adoption_pct;
         if (c.key === 'attach_rate') return prior.attach_rate;
         return (prior as unknown as Record<string, number>)[c.key] ?? 0;
       })(),
@@ -342,70 +342,79 @@ export function HealthRisk() {
           </div>
 
           {/* Trend charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <SectionCard title={`Health & Attach Trend (${compareMode === 'mom' ? 'Month-over-Month' : compareMode === 'qoq' ? 'Quarter-over-Quarter' : 'Selected Range'})`}>
-              <ResponsiveContainer width="100%" height={240}>
-                <LineChart data={activeTrend} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-                  <YAxis domain={[0, 100]} tick={{ fontSize: 10 }} />
-                  <Tooltip />
-                  <Legend />
-                  <Line type="monotone" dataKey="health" stroke="#3b82f6" name="Health Score" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} connectNulls />
-                  <Line type="monotone" dataKey="attach" stroke="#22c55e" name="Attach Rate" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} strokeDasharray="4 2" connectNulls />
-                </LineChart>
-              </ResponsiveContainer>
-            </SectionCard>
+          {activeTrend && activeTrend.some(d => d.health !== null) ? (
+            <>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <SectionCard title={`Health & Attach Trend (${compareMode === 'mom' ? 'Month-over-Month' : compareMode === 'qoq' ? 'Quarter-over-Quarter' : 'Selected Range'})`}>
+                  <ResponsiveContainer width="100%" height={240}>
+                    <LineChart data={activeTrend} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                      <XAxis dataKey="month" tick={{ fontSize: 10 }} />
+                      <YAxis domain={[0, 100]} tick={{ fontSize: 10 }} />
+                      <Tooltip />
+                      <Legend />
+                      <Line type="monotone" dataKey="health" stroke="#3b82f6" name="Health Score" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} connectNulls />
+                      <Line type="monotone" dataKey="attach" stroke="#22c55e" name="Attach Rate" strokeWidth={2} dot={{ r: 4 }} activeDot={{ r: 6 }} strokeDasharray="4 2" connectNulls />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </SectionCard>
 
-            <SectionCard title="Health Score Components — Current vs Prior">
-              <ResponsiveContainer width="100%" height={240}>
-                <BarChart data={clientData.comparison} layout="vertical" margin={{ top: 5, right: 20, left: 90, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-                  <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 10 }} />
-                  <YAxis type="category" dataKey="label" tick={{ fontSize: 10 }} width={85} />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="prior" name="Prior" fill="#e2e8f0" radius={[0, 2, 2, 0]} />
-                  <Bar dataKey="current" name="Current" radius={[0, 2, 2, 0]}>
-                    {clientData.comparison.map((entry, i) => (
-                      <Cell key={i} fill={COMPONENTS.find(c => c.label === entry.label)?.color || '#3b82f6'} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </SectionCard>
-          </div>
+                <SectionCard title="Health Score Components — Current vs Prior">
+                  <ResponsiveContainer width="100%" height={240}>
+                    <BarChart data={clientData.comparison} layout="vertical" margin={{ top: 5, right: 20, left: 90, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
+                      <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 10 }} />
+                      <YAxis type="category" dataKey="label" tick={{ fontSize: 10 }} width={85} />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="prior" name="Prior" fill="#e2e8f0" radius={[0, 2, 2, 0]} />
+                      <Bar dataKey="current" name="Current" radius={[0, 2, 2, 0]}>
+                        {clientData.comparison.map((entry, i) => (
+                          <Cell key={i} fill={COMPONENTS.find(c => c.label === entry.label)?.color || '#3b82f6'} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </SectionCard>
+              </div>
 
-          {/* Component trends over time + radar */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <SectionCard title="All Health Components Over Time">
-              <ResponsiveContainer width="100%" height={240}>
-                <LineChart data={activeTrend} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-                  <YAxis domain={[0, 100]} tick={{ fontSize: 10 }} />
-                  <Tooltip />
-                  <Legend wrapperStyle={{ fontSize: 10 }} />
-                  <Line type="monotone" dataKey="active_pct" stroke="#3b82f6" name="Active %" strokeWidth={1.5} dot={false} connectNulls />
-                  <Line type="monotone" dataKey="feature_adoption" stroke="#8b5cf6" name="Feature Adoption" strokeWidth={1.5} dot={false} connectNulls />
-                  <Line type="monotone" dataKey="engagement" stroke="#22c55e" name="Engagement" strokeWidth={1.5} dot={false} connectNulls />
-                  <Line type="monotone" dataKey="support" stroke="#f59e0b" name="Support" strokeWidth={1.5} dot={false} connectNulls />
-                  <Line type="monotone" dataKey="billing" stroke="#ec4899" name="Billing" strokeWidth={1.5} dot={false} connectNulls />
-                </LineChart>
-              </ResponsiveContainer>
-            </SectionCard>
+              {/* Component trends over time + radar */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <SectionCard title="All Health Components Over Time">
+                  <ResponsiveContainer width="100%" height={240}>
+                    <LineChart data={activeTrend} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                      <XAxis dataKey="month" tick={{ fontSize: 10 }} />
+                      <YAxis domain={[0, 100]} tick={{ fontSize: 10 }} />
+                      <Tooltip />
+                      <Legend wrapperStyle={{ fontSize: 10 }} />
+                      <Line type="monotone" dataKey="active_pct" stroke="#3b82f6" name="Active %" strokeWidth={1.5} dot={false} connectNulls />
+                      <Line type="monotone" dataKey="feature_adoption" stroke="#8b5cf6" name="Feature Adoption" strokeWidth={1.5} dot={false} connectNulls />
+                      <Line type="monotone" dataKey="engagement" stroke="#22c55e" name="Engagement" strokeWidth={1.5} dot={false} connectNulls />
+                      <Line type="monotone" dataKey="support" stroke="#f59e0b" name="Support" strokeWidth={1.5} dot={false} connectNulls />
+                      <Line type="monotone" dataKey="billing" stroke="#ec4899" name="Billing" strokeWidth={1.5} dot={false} connectNulls />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </SectionCard>
 
-            <SectionCard title={`Health Score Radar — ${latestMonth}`}>
-              <ResponsiveContainer width="100%" height={240}>
-                <RadarChart data={clientData.radarData} margin={{ top: 10, right: 30, left: 30, bottom: 10 }}>
-                  <PolarGrid />
-                  <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10 }} />
-                  <Radar name="Current" dataKey="value" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.25} strokeWidth={2} />
-                  <Tooltip formatter={(v) => [`${v}`, '']} />
-                </RadarChart>
-              </ResponsiveContainer>
-            </SectionCard>
-          </div>
+                <SectionCard title={`Health Score Radar — ${latestMonth}`}>
+                  <ResponsiveContainer width="100%" height={240}>
+                    <RadarChart data={clientData.radarData} margin={{ top: 10, right: 30, left: 30, bottom: 10 }}>
+                      <PolarGrid />
+                      <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10 }} />
+                      <Radar name="Current" dataKey="value" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.25} strokeWidth={2} />
+                      <Tooltip formatter={(v) => [`${v}`, '']} />
+                    </RadarChart>
+                  </ResponsiveContainer>
+                </SectionCard>
+              </div>
+            </>
+          ) : (
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+              <p className="text-sm text-gray-500">No health data available for this client in the selected period.</p>
+              <p className="text-xs text-gray-400 mt-1">Try expanding the date range or switch to MoM view.</p>
+            </div>
+          )}
 
           <div className="border-t border-gray-200" />
         </div>

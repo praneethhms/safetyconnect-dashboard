@@ -81,6 +81,19 @@ export function ExecutiveKPI() {
     const totalEscalations = mySupport.reduce((s, m) => s + m.escalation_count, 0);
     const escalationRate = totalTickets ? (totalEscalations / totalTickets) * 100 : 0;
 
+    // Sparklines: last 6 months
+    const last6Months = ['2025-10','2025-11','2025-12','2026-01','2026-02','2026-03'];
+    const adoptionSparkline = last6Months.map(m => {
+      const acts = userActivity.filter(u => u.month === m && ids.has(u.client_id));
+      const lic = acts.reduce((s, a) => s + a.licensed_users, 0);
+      const act = acts.reduce((s, a) => s + a.active_users, 0);
+      return lic ? parseFloat(((act / lic) * 100).toFixed(1)) : 0;
+    });
+    const healthSparkline = last6Months.map(m => {
+      const snaps = healthSnapshots.filter(h => h.month === m && ids.has(h.client_id));
+      return snaps.length ? parseFloat((snaps.reduce((s, h) => s + h.health_score, 0) / snaps.length).toFixed(1)) : 0;
+    });
+
     return {
       // Portfolio Scale
       totalClients, licensed, active, inactive, adoptionRate,
@@ -100,6 +113,8 @@ export function ExecutiveKPI() {
       // Risk
       recoveryPct, churnRiskARR, avgResolution, escalationRate,
       isLeadership: user.role !== 'csm',
+      // Sparklines
+      adoptionSparkline, healthSparkline,
       // For export
       kpiRows: [
         { metric: 'Total Clients', value: totalClients },
@@ -149,6 +164,7 @@ export function ExecutiveKPI() {
             value={fmtPct(data.adoptionRate)}
             delta={data.d_adoption}
             colorBand={colorBand(data.adoptionRate, { red: 50, amber: 70, higherIsBetter: true })}
+            sparkline={data.adoptionSparkline}
           />
         </div>
       </SectionCard>
@@ -236,6 +252,7 @@ export function ExecutiveKPI() {
             value={data.avgHealth.toFixed(0)}
             delta={data.d_health}
             colorBand={colorBand(data.avgHealth, { red: 65, amber: 75, higherIsBetter: true })}
+            sparkline={data.healthSparkline}
           />
         </div>
       </SectionCard>
